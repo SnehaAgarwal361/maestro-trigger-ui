@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { triggerApiService } from "@/services/triggerApi";
 import { Settings, Save } from "lucide-react";
@@ -11,14 +12,16 @@ import { Settings, Save } from "lucide-react";
 const ApiConfigDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [config, setConfig] = useState(triggerApiService.getConfig());
+  const [demoMode, setDemoMode] = useState(triggerApiService.isDemoMode());
   const { toast } = useToast();
 
   const handleSave = () => {
     triggerApiService.updateConfig(config);
+    triggerApiService.setDemoMode(demoMode);
     setIsOpen(false);
     toast({
       title: "Configuration Saved",
-      description: "API configuration has been updated successfully",
+      description: `API configuration updated. Demo mode: ${demoMode ? 'Enabled' : 'Disabled'}`,
       variant: "default"
     });
   };
@@ -35,10 +38,23 @@ const ApiConfigDialog = () => {
         <DialogHeader>
           <DialogTitle>API Configuration</DialogTitle>
           <DialogDescription>
-            Configure your TRG API endpoints and credentials
+            Configure your TRG API endpoints and credentials. Enable demo mode to test the UI without making real API calls.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <Label htmlFor="demoMode">Demo Mode</Label>
+              <p className="text-sm text-muted-foreground">
+                Test the UI without making real API calls
+              </p>
+            </div>
+            <Switch
+              id="demoMode"
+              checked={demoMode}
+              onCheckedChange={setDemoMode}
+            />
+          </div>
           <div className="grid gap-2">
             <Label htmlFor="triggerUrl">Trigger API URL</Label>
             <Input

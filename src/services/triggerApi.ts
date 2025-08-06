@@ -22,10 +22,13 @@ class TriggerApiService {
   private config: TriggerApiConfig;
   private token: string | null = null;
   private tokenExpiry: number = 0;
+  private demoMode: boolean = false;
 
   constructor() {
     // Load configuration from localStorage or use demo defaults
     const savedConfig = localStorage.getItem('triggerApiConfig');
+    this.demoMode = localStorage.getItem('triggerApiDemoMode') === 'true';
+    
     if (savedConfig) {
       this.config = JSON.parse(savedConfig);
     } else {
@@ -53,6 +56,15 @@ class TriggerApiService {
     return { ...this.config };
   }
 
+  public setDemoMode(enabled: boolean): void {
+    this.demoMode = enabled;
+    localStorage.setItem('triggerApiDemoMode', enabled.toString());
+  }
+
+  public isDemoMode(): boolean {
+    return this.demoMode;
+  }
+
   private generateUUID(): string {
     return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
       const r = (Date.now() + Math.random() * 16) % 16 | 0;
@@ -74,6 +86,24 @@ class TriggerApiService {
 
   async generateToken(): Promise<TokenResponse> {
     try {
+      // Demo mode simulation
+      if (this.demoMode) {
+        console.log('Demo mode: Simulating token generation...');
+        await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
+        
+        const tokenData: TokenResponse = {
+          access_token: 'demo_token_' + Date.now(),
+          expires_in: 3600,
+          token_type: 'Bearer'
+        };
+        
+        this.token = tokenData.access_token;
+        this.tokenExpiry = Date.now() + (tokenData.expires_in * 1000);
+        
+        return tokenData;
+      }
+
+      // Real API call
       const { signature, timestamp } = this.computeMAC();
       const correlationId = this.generateUUID();
 
@@ -109,6 +139,12 @@ class TriggerApiService {
       return tokenData;
     } catch (error) {
       console.error('Token generation error:', error);
+      
+      // If CORS error, suggest demo mode
+      if (error instanceof TypeError && error.message === 'Failed to fetch') {
+        throw new Error('CORS Error: Unable to reach API from browser. This is likely due to CORS policy. Consider using demo mode or implementing a backend proxy.');
+      }
+      
       throw error;
     }
   }
@@ -123,6 +159,19 @@ class TriggerApiService {
     try {
       await this.ensureValidToken();
 
+      // Demo mode simulation
+      if (this.demoMode) {
+        console.log('Demo mode: Simulating add refresh...');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing
+        
+        return {
+          status: 'SUCCESS',
+          message: `Demo: Successfully processed ${file.name} for ADD_REFRESH_TRIGGER`,
+          id: 'demo_job_' + Date.now()
+        };
+      }
+
+      // Real API call
       const formData = new FormData();
       formData.append('file', file);
       formData.append('processType', 'ADD_REFRESH_TRIGGER');
@@ -151,6 +200,19 @@ class TriggerApiService {
     try {
       await this.ensureValidToken();
 
+      // Demo mode simulation
+      if (this.demoMode) {
+        console.log('Demo mode: Simulating stop refresh...');
+        await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate processing
+        
+        return {
+          status: 'SUCCESS',
+          message: `Demo: Successfully processed ${file.name} for STOP_REFRESH`,
+          id: 'demo_job_' + Date.now()
+        };
+      }
+
+      // Real API call
       const formData = new FormData();
       formData.append('file', file);
       formData.append('processType', 'STOP_REFRESH');
