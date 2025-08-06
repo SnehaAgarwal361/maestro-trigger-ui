@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import ApiConfigDialog from "@/components/config/ApiConfigDialog";
 import { Menu, X } from "lucide-react";
 
 const AmexNavbar = () => {
@@ -20,6 +21,7 @@ const AmexNavbar = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
+            <ApiConfigDialog />
             <span className="text-sm text-primary-foreground/80">
               American Express
             </span>
@@ -47,6 +49,9 @@ const AmexNavbar = () => {
       {isMenuOpen && (
         <div className="md:hidden">
           <div className="px-2 pt-2 pb-3 space-y-1 bg-primary border-t border-primary-foreground/20">
+            <div className="px-3 py-2">
+              <ApiConfigDialog />
+            </div>
             <span className="block px-3 py-2 text-sm text-primary-foreground/80">
               American Express
             </span>

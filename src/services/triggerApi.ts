@@ -24,13 +24,33 @@ class TriggerApiService {
   private tokenExpiry: number = 0;
 
   constructor() {
-    // These would typically come from environment variables
-    this.config = {
-      triggerUrl: process.env.VITE_TRIGGER_URL || 'https://api-trigger.example.com',
-      appId: process.env.VITE_TRG_APP_INTEGRATION_ID || 'maestro-ui-app',
-      appSecret: process.env.VITE_TRG_APP_SECRET || 'demo-secret',
-      cbisA2aApiUrl: process.env.VITE_CBIS_A2A_API_URL || 'https://cbis-auth.example.com/oauth/token'
-    };
+    // Load configuration from localStorage or use demo defaults
+    const savedConfig = localStorage.getItem('triggerApiConfig');
+    if (savedConfig) {
+      this.config = JSON.parse(savedConfig);
+    } else {
+      // Demo configuration - replace with actual values
+      this.config = {
+        triggerUrl: 'https://api-trigger-demo.amex.com',
+        appId: 'maestro-ui-app-demo',
+        appSecret: 'demo-secret-key-replace-with-actual',
+        cbisA2aApiUrl: 'https://cbis-auth-demo.amex.com/oauth/token'
+      };
+      this.saveConfig();
+    }
+  }
+
+  private saveConfig(): void {
+    localStorage.setItem('triggerApiConfig', JSON.stringify(this.config));
+  }
+
+  public updateConfig(newConfig: Partial<TriggerApiConfig>): void {
+    this.config = { ...this.config, ...newConfig };
+    this.saveConfig();
+  }
+
+  public getConfig(): TriggerApiConfig {
+    return { ...this.config };
   }
 
   private generateUUID(): string {
